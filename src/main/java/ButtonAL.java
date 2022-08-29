@@ -39,7 +39,9 @@ public class ButtonAL extends JPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getActionCommand().equals("disable")) {
-                myButton.setEnabled(false);
+                EnterData ed=new EnterData();
+
+                //myButton.setEnabled(false);
 
             }else {
                 myButton.setEnabled(true);
