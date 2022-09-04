@@ -22,6 +22,14 @@ class CryptTest {
         -Maybe I need some insight from other programmers, and also I need to know how does this
         encryption algorithm works.
         * */
+        byte[] b=new byte[10];
+        /*for(int i=0;i<b.length;i++){
+            b[i]=(byte)i;
+            System.out.println(b[i]);
+        }*/
+
+
+
 
     }
 

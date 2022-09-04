@@ -41,6 +41,9 @@ public class Crypt {
         byte[] iv = new byte[16];
         new SecureRandom().nextBytes(iv);
         System.out.println("The iv:"+iv.toString());
+        for(int i=0;i<iv.length;i++){
+            System.out.println(iv[i]);
+        }
         return new IvParameterSpec(iv);
     }
     public static String encrypt(String algorithm, String input, SecretKey key,
