@@ -3,6 +3,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.nio.file.FileSystemException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 
 public class EnterData {
@@ -24,8 +27,12 @@ public class EnterData {
     private JButton btnShow;
     private JFileChooser JFC ;
 
+    private ArrayList<String> originList;
+    private byte[] iv;
+
     public EnterData(){
         JFC=new JFileChooser();
+
         btnEncrypt.addActionListener(aLEncrypt);
         btnDecrypt.addActionListener(aLDecrypt);
 
@@ -52,15 +59,26 @@ public class EnterData {
     public ActionListener aLEncrypt=new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-
             System.out.println("Hola");
+            if(originList==null){
+                JOptionPane.showMessageDialog(null, "You must select AND show an origin file");
+            }else{
+                originList.stream();
+
+            }
         }
     };
 
     public ActionListener aLDecrypt=new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
+
             System.out.println("Hola");
+            if(originList==null){
+                JOptionPane.showMessageDialog(null, "You must select AND show an origin file");
+            }else{
+
+            }
         }
     };
 
@@ -93,7 +111,39 @@ public class EnterData {
     ActionListener selectIV= new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
+
             searchFile(txtIV);
+            FileInputStream iS= null;
+            BufferedReader dis=null;
+
+            try{
+                iS = new FileInputStream(txtIV.getText());
+                dis=new BufferedReader(new InputStreamReader(iS));
+                //originList=(ArrayList<String>) dis.lines().collect(Collectors.toList());
+                String[] all= dis.lines().reduce("",(a,b)->a+b).split(",");
+                iv=new byte[all.length];
+                for(int i=0;i< all.length;i++){
+                    iv[i]=Byte.valueOf(all[i]);
+                }
+                /*int count=0;
+                for(byte b:iv){
+                    System.out.println(" "+String.valueOf(count++)+b);
+                }*/
+
+
+            } catch (FileNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }finally {
+                if(iS!=null){
+                    try {
+                        iS.close();
+                        dis.close();
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
+
         }};
 
     ActionListener saveInDestiny=new ActionListener() {
@@ -107,24 +157,23 @@ public class EnterData {
         @Override
         public void actionPerformed(ActionEvent e) {
             FileInputStream iS= null;
+            BufferedReader dis=null;
             try {
                 iS = new FileInputStream(txtOriginPath.getText());
+                dis=new BufferedReader(new InputStreamReader(iS));
+                originList=(ArrayList<String>) dis.lines().collect(Collectors.toList());
+                String all=originList.stream().reduce("",(a,b)->a+=b+"\n");
+                //sb.append(dis.readLine());
+                txtAOriginal.setText(all);
+                //DataInputStream dis=new DataInputStream(iS);
 
             } catch (FileNotFoundException ex) {
                 throw new RuntimeException(ex);
-            }
-
-            //DataInputStream dis=new DataInputStream(iS);
-            BufferedReader dis=new BufferedReader(new InputStreamReader(iS));
-            try{
-
-                String all=dis.lines().reduce("",(a,b)->a+=b+"\n");
-                //sb.append(dis.readLine());
-                txtAOriginal.setText(all);
-
-            }finally {
+            } finally {
                 try {
-                    dis.close();
+                    if(dis!=null){
+                        dis.close();
+                    }
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
