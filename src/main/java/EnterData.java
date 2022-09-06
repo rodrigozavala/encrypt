@@ -29,6 +29,7 @@ public class EnterData {
 
     private ArrayList<String> originList;
     private byte[] iv;
+    private String key;
 
     public EnterData(){
         JFC=new JFileChooser();
@@ -59,12 +60,26 @@ public class EnterData {
     public ActionListener aLEncrypt=new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            System.out.println("Hola");
+            System.out.println("Encrypt");
             if(originList==null){
                 JOptionPane.showMessageDialog(null, "You must select AND show an origin file");
             }else{
-                originList.stream();
+                String[] chain=txtAOriginal.getText().split("\n");
+                String result="";
+                for(String s: chain){
+                    if(chain.equals("")){
+                        result+="\n";
+                    }else{
+                        result+=Crypt.encryptText(s,key,"104729",iv)+"\n";
+                    }
+                }
+                txtAEncrypted.setText(result);
 
+                //System.out.println("'"+txtAOriginal.getText()+"' is converted");
+                //System.out.println("'"+key+"'");
+
+
+                //txtAEncrypted.setText(Crypt.encryptText(txtAOriginal.getText(),key,"104729",iv));
             }
         }
     };
@@ -73,11 +88,25 @@ public class EnterData {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            System.out.println("Hola");
+            System.out.println("Decrypt");
             if(originList==null){
                 JOptionPane.showMessageDialog(null, "You must select AND show an origin file");
             }else{
+                String[] chain=txtAOriginal.getText().split("\n");
+                String result="";
+                for(String s: chain){
+                    if(chain.equals("")){
+                        result+="\n";
+                    }else{
+                        result+=Crypt.decryptText(s,key,"104729",iv)+"\n";
+                    }
+                }
+                txtADecrypted.setText(result);
 
+                //System.out.println("'"+txtAOriginal.getText()+"' is converted");
+                //System.out.println("'"+key+"'");
+
+                //txtADecrypted.setText(Crypt.decryptText(txtAOriginal.getText(),key,"104729",iv));
             }
         }
     };
@@ -107,39 +136,63 @@ public class EnterData {
 
     ActionListener selectKey=new ActionListener() {
         @Override
-        public void actionPerformed(ActionEvent e) {searchFile(txtEncriptionKey);}};
+        public void actionPerformed(ActionEvent e) {
+            if(searchFile(txtEncriptionKey)){
+                FileInputStream iS= null;
+                BufferedReader dis=null;
+                try{
+                    iS = new FileInputStream(txtEncriptionKey.getText());
+                    dis=new BufferedReader(new InputStreamReader(iS));
+                    String[] all= dis.lines().reduce("",(a,b)->a+b).split(",");
+                    key=dis.lines().reduce("",(a,b)->a+b);
+
+                } catch (FileNotFoundException ex) {
+                    throw new RuntimeException(ex);
+                }finally {
+                    if(iS!=null){
+                        try {
+                            iS.close();
+                            dis.close();
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                }
+            }
+        }};
     ActionListener selectIV= new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            searchFile(txtIV);
-            FileInputStream iS= null;
-            BufferedReader dis=null;
+            if(searchFile(txtIV)){
+                FileInputStream iS= null;
+                BufferedReader dis=null;
 
-            try{
-                iS = new FileInputStream(txtIV.getText());
-                dis=new BufferedReader(new InputStreamReader(iS));
-                //originList=(ArrayList<String>) dis.lines().collect(Collectors.toList());
-                String[] all= dis.lines().reduce("",(a,b)->a+b).split(",");
-                iv=new byte[all.length];
-                for(int i=0;i< all.length;i++){
-                    iv[i]=Byte.valueOf(all[i]);
-                }
-                /*int count=0;
-                for(byte b:iv){
-                    System.out.println(" "+String.valueOf(count++)+b);
-                }*/
+                try{
+                    iS = new FileInputStream(txtIV.getText());
+                    dis=new BufferedReader(new InputStreamReader(iS));
+                    //originList=(ArrayList<String>) dis.lines().collect(Collectors.toList());
+                    String[] all= dis.lines().reduce("",(a,b)->a+b).split(",");
+                    iv=new byte[all.length];
+                    for(int i=0;i< all.length;i++){
+                        iv[i]=Byte.valueOf(all[i]);
+                    }
+                    /*int count=0;
+                    for(byte b:iv){
+                        System.out.println(" "+String.valueOf(count++)+b);
+                    }*/
 
 
-            } catch (FileNotFoundException ex) {
-                throw new RuntimeException(ex);
-            }finally {
-                if(iS!=null){
-                    try {
-                        iS.close();
-                        dis.close();
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
+                } catch (FileNotFoundException ex) {
+                    throw new RuntimeException(ex);
+                }finally {
+                    if(iS!=null){
+                        try {
+                            iS.close();
+                            dis.close();
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                 }
             }
@@ -163,15 +216,14 @@ public class EnterData {
                 dis=new BufferedReader(new InputStreamReader(iS));
                 originList=(ArrayList<String>) dis.lines().collect(Collectors.toList());
                 String all=originList.stream().reduce("",(a,b)->a+=b+"\n");
-                //sb.append(dis.readLine());
                 txtAOriginal.setText(all);
-                //DataInputStream dis=new DataInputStream(iS);
 
             } catch (FileNotFoundException ex) {
                 throw new RuntimeException(ex);
             } finally {
                 try {
-                    if(dis!=null){
+                    if(iS!=null){
+                        iS.close();
                         dis.close();
                     }
                 } catch (IOException ex) {
@@ -182,7 +234,7 @@ public class EnterData {
         }
     };
 
-    private void searchFile(JTextField txt){
+    private boolean searchFile(JTextField txt){
         System.out.println("Dialog= "+JFC.getDialogTitle());
         int status=JFC.showOpenDialog(panel1);
         if(status==JFileChooser.APPROVE_OPTION){
@@ -190,8 +242,11 @@ public class EnterData {
             String filePath=JFC.getSelectedFile().getPath();
             System.out.println(filePath);
             txt.setText(filePath);
+            return true;
         }else if(status==JFileChooser.CANCEL_OPTION){
             System.out.println("Cancelado");
+            return false;
         }
+        return false;
     }
 }

@@ -40,12 +40,18 @@ public class Crypt {
     public static IvParameterSpec generateIv() {
         byte[] iv = new byte[16];
         new SecureRandom().nextBytes(iv);
-        System.out.println("The iv:"+iv.toString());
+        /*System.out.println("The iv:"+iv.toString());
         for(int i=0;i<iv.length;i++){
             System.out.println(iv[i]);
-        }
+        }*/
         return new IvParameterSpec(iv);
     }
+
+    public static IvParameterSpec generateIv(byte[] iv){
+        return new IvParameterSpec(iv);
+    }
+
+
     public static String encrypt(String algorithm, String input, SecretKey key,
                                  IvParameterSpec iv) throws NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidAlgorithmParameterException, InvalidKeyException,
@@ -70,13 +76,19 @@ public class Crypt {
         return new String(plainText);
     }
 
-    public static String encryptText(String cookieValue, String password, String salt) {
-        //String input = "baeldung";
+    /**
+     * Not optimized to use in the program
+     * @param originalText
+     * @param password
+     * @param salt
+     * @return
+     */
+    public static String encryptText(String originalText, String password, String salt){
         try {
             SecretKey key = getKeyFromPassword(password,salt); //generateKey(128);
             IvParameterSpec ivParameterSpec = IV;//generateIv();
             String algorithm = "AES/CBC/PKCS5Padding";
-            String cipherText = encrypt(algorithm, cookieValue, key, ivParameterSpec);
+            String cipherText = encrypt(algorithm, originalText, key, ivParameterSpec);
             //String plainText = decrypt(algorithm, cipherText, key, ivParameterSpec);
 
             return cipherText;
@@ -104,11 +116,57 @@ public class Crypt {
             throw new RuntimeException(e);
         }
         return "";
+    }
+    public static String encryptText(String originalText, String password, String salt,byte[] iv){
+        try {
+            SecretKey key = getKeyFromPassword(password,salt); //generateKey(128);
+            IvParameterSpec ivParameterSpec = generateIv(iv);//generateIv();
+            String algorithm = "AES/CBC/PKCS5Padding";
+            String cipherText = encrypt(algorithm, originalText, key, ivParameterSpec);
 
+            return cipherText;
+        }catch(RuntimeException e) {
+            System.err.println(e.getMessage());
+        } catch (InvalidKeyException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("1)"+e.getMessage());
+        } catch (NoSuchPaddingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("2)"+e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("3)"+e.getMessage());
+        } catch (InvalidAlgorithmParameterException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("4)"+e.getMessage());
+        } catch (BadPaddingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("5)"+e.getMessage());
+        } catch (IllegalBlockSizeException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("6)"+e.getMessage());
+        } catch (InvalidKeySpecException e) {
+            System.err.println("7)"+e.getMessage());
+            throw new RuntimeException(e);
+        }
+        return "";
     }
 
+
+    /**
+     * Not optimized to run in the program
+     * @param cipherText
+     * @param password
+     * @param salt
+     * @return
+     */
     public static String decryptText(String cipherText, String password, String salt) {
-        //String input = "baeldung";
         try {
             SecretKey key = getKeyFromPassword(password,salt);//generateKey(128);
             IvParameterSpec ivParameterSpec = IV;;//generateIv();
@@ -141,7 +199,50 @@ public class Crypt {
             throw new RuntimeException(e);
         }
         return "";
+    }
+
+    public static String decryptText(String cipherText, String password, String salt,byte[] iv) {
+        //String input = "baeldung";
+        try {
+            SecretKey key = getKeyFromPassword(password,salt);//generateKey(128);
+            IvParameterSpec ivParameterSpec = generateIv(iv);;//generateIv();
+            String algorithm = "AES/CBC/PKCS5Padding";
+            String plainText = decrypt(algorithm, cipherText, key, ivParameterSpec);
+
+            return plainText;
+        }catch(RuntimeException e) {
+            System.err.println(e.getMessage());
+        } catch (InvalidKeyException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("1)"+e.getMessage());
+        } catch (NoSuchPaddingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("2)"+e.getMessage());
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("3)"+e.getMessage());
+        } catch (InvalidAlgorithmParameterException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("4)"+e.getMessage());
+        } catch (BadPaddingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("5)"+e.getMessage());
+        } catch (IllegalBlockSizeException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            System.err.println("6)"+e.getMessage());
+        } catch (InvalidKeySpecException e) {
+            System.err.println("7)"+e.getMessage());
+            throw new RuntimeException(e);
+        }
+        return "";
 
     }
+
 
 }
