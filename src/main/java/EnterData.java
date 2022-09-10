@@ -2,9 +2,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.nio.file.FileSystemException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 
@@ -17,7 +15,7 @@ public class EnterData {
     private JButton btnDecrypt;
     private JButton btnSearchOrigin;
     private JButton btnSearchDestiny;
-    private JButton btnSaveInDestiny;
+    private JButton saveOriginalInDestinyButton;
     private JButton btnSelectKey;
     private JTextField txtIV;
     private JButton btnSelectIV;
@@ -25,6 +23,8 @@ public class EnterData {
     private JTextArea txtAEncrypted;
     private JTextArea txtADecrypted;
     private JButton btnShow;
+    private JButton saveEncryptedInDestinyButton;
+    private JButton saveDecryptedInDestinyButton;
     private JFileChooser JFC ;
 
     private ArrayList<String> originList;
@@ -43,7 +43,10 @@ public class EnterData {
         btnSelectIV.addActionListener(selectIV);
         btnSelectKey.addActionListener(selectKey);
 
-        btnSaveInDestiny.addActionListener(saveInDestiny);
+        saveOriginalInDestinyButton.addActionListener(saveOriginInDestiny);
+
+        saveDecryptedInDestinyButton.addActionListener(saveDecInDest);
+        saveEncryptedInDestinyButton.addActionListener(saveEncInDest);
 
         btnShow.addActionListener(showOriginFile);
 
@@ -199,12 +202,59 @@ public class EnterData {
 
         }};
 
-    ActionListener saveInDestiny=new ActionListener() {
+    ActionListener saveOriginInDestiny =new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-
+            saveFile(txtAOriginal);
         }
     };
+
+    ActionListener saveEncInDest =new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            saveFile(txtAEncrypted);
+        }
+    };
+    ActionListener saveDecInDest =new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            saveFile(txtADecrypted);
+        }
+    };
+
+    private boolean saveFile(JTextArea text)  {
+        FileOutputStream oS= null;
+        DataOutputStream dos=null;
+        if(txtDestinyPath.getText().equals("")){
+            JOptionPane.showMessageDialog(null, "You must select a Destiny path");
+            return false;
+        }
+        try{
+            oS=new FileOutputStream(txtDestinyPath.getText());
+            dos=new DataOutputStream(oS);
+            //int count=text.getLineCount();
+            //StringBuffer sBuffer=new StringBuffer(text.getText());
+            dos.writeUTF(text.getText());
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            if(oS!=null && dos!=null){
+                try {
+                    oS.close();
+                    dos.close();
+                    return true;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            return false;
+        }
+    }
+
+
+
 
     ActionListener showOriginFile=new ActionListener() {
         @Override
